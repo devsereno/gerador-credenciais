@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Credenciais</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f0f0; margin: 0; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+
+        .card {
+            width: 85.6mm;
+            height: 53.98mm;
+            margin: 15px auto;
+            border: 3px solid #000;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-content {
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 88%;
+        }
+        .card-title {
+            font-size: 9pt;
+            margin-bottom: 2mm;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        .barcode {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 26mm !important;
+        }
+        .name-text {
+            font-size: 9.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 2mm;
+            padding: 0 3mm;
+        }
+        .senha-mascarada {
+            font-size: 10.5pt;
+            letter-spacing: 3px;
+            margin-top: 2mm;
+        }
+
+        @media print {
+            .card { margin: 8mm auto; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerar Credenciais</h1>
+        
+        <label>Nome / Usuário:</label><br>
+        <input type="text" id="nome" placeholder="Ex: Ricardo Junior" style="width:85%; padding:10px; margin:8px 0;">
+        
+        <label>Senha:</label><br>
+        <input type="text" id="senha" placeholder="Digite a senha" style="width:85%; padding:10px; margin:8px 0;">
+        
+        <br><br>
+        <button onclick="gerarCredenciais()" style="padding:12px 40px; font-size:17px; background:#1e3a8a; color:white; border:none; border-radius:6px;">Gerar Cartões para Impressão</button>
+
+        <div id="printArea" style="display:none; margin-top:30px;">
+            <h2>Cartões Gerados — Pronto para Imprimir</h2>
+            
+            <!-- Cartão 1 - Nome -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-title">🔧 Gerar Credenciais</div>
+                    <svg id="barcodeNome" class="barcode"></svg>
+                    <div class="name-text" id="textoNome"></div>
+                </div>
+            </div>
+
+            <!-- Cartão 2 - Senha -->
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-title" style="margin-bottom:4mm;">🔧 Gerar Credenciais</div>
+                    <svg id="barcodeSenha" class="barcode"></svg>
+                    <div class="senha-mascarada" id="textoSenhaMascarada">********</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gerarCredenciais() {
+            let nome = document.getElementById("nome").value.trim();
+            const senha = document.getElementById("senha").value.trim();
+            if (!nome || !senha) return alert("Preencha os dois campos!");
+
+            nome = nome.toUpperCase();
+            document.getElementById("textoNome").textContent = nome;
+            document.getElementById("textoSenhaMascarada").textContent = "*".repeat(Math.max(senha.length, 8));
+
+            // Configuração otimizada para caber no cartão
+            JsBarcode("#barcodeNome", nome, { 
+                format: "CODE128", 
+                width: 1.35, 
+                height: 26, 
+                displayValue: false, 
+                margin: 5 
+            });
+
+            JsBarcode("#barcodeSenha", senha, { 
+                format: "CODE128", 
+                width: 1.35, 
+                height: 26, 
+                displayValue: false, 
+                margin: 5 
+            });
+
+            document.getElementById("printArea").style.display = "block";
+        }
+    </script>
+</body>
+</html>
