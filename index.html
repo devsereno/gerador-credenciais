@@ -6,64 +6,154 @@
     <title>Gerar Credenciais</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
     
+    <!-- Tailwind CSS (leve e moderno) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f0f0; margin: 0; }
-        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
         .card {
             width: 85.6mm;
             height: 53.98mm;
             margin: 15px auto;
-            border: 3px solid #000;
+            border: 3px solid #0ea5e9;
             background: white;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
-        .card-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            width: 90%;
-        }
-        .card-title {
-            font-size: 9pt;
-            margin-bottom: 2mm;
-            font-weight: bold;
-            color: #1e3a8a;
-        }
-        .barcode {
-            width: 100% !important;
-            max-width: 100% !important;
-            height: auto !important;
-        }
-        .name-text, .senha-mascarada {
-            font-size: 9.5pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 2mm;
-            padding: 0 4mm;
-        }
-
+        .barcode { width: 100% !important; max-width: 100% !important; height: auto !important; }
+        
         @media print {
-            .card { margin: 8mm auto; box-shadow: none; }
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .card { margin: 8mm auto; box-shadow: none; border: 2px solid #0ea5e9; }
+            button, .no-print { display: none !important; }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Gerar Credenciais</h1>
-        
-        <label>Nome / Usuário:</label><br>
-        <input type="text" id="nome" placeholder="Ex: Ricardo Junior" style="width:85%; padding:10px; margin:8px 0;">
-        
-        <label>Senha:</label><br>
-        <input type="text" id="senha" placeholder="Digite a senha" style="width:85%; padding:10px; margin:8px 0;">
-        
-        <br><br>
-        <button onclick="gerarCredenciais()" style="padding:12px 40px; font-size:17px; background:#1e3a8a; color:white; border:none; border-radius:6px;">Gerar Cartões para Impressão</button>
+<body class="bg-zinc-950 text-white min-h-screen">
+    <div class="max-w-lg mx-auto p-6">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                🔧 Gerar Credenciais
+            </h1>
+            <p class="text-zinc-400 mt-2">Code 128 • Cartões de Crédito</p>
+        </div>
 
-        <div id="printArea" style="display:none; margin-top:30px;">
-            <
+        <div class="space-y-6 bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+            <div>
+                <label class="block text-sm font-medium text-zinc-400 mb-2">Nome / Usuário</label>
+                <input type="text" id="nome" 
+                       class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-white"
+                       placeholder="Ex: Ricardo Junior">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-zinc-400 mb-2">Senha</label>
+                <input type="text" id="senha" 
+                       class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-white"
+                       placeholder="Digite sua senha">
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="gerarCredenciais()" 
+                        class="flex-1 bg-cyan-500 hover:bg-cyan-600 transition py-4 rounded-2xl font-semibold text-lg">
+                    Gerar Cartões
+                </button>
+                
+                <button onclick="resetForm()" 
+                        class="px-8 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl font-medium transition">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Área de Impressão -->
+        <div id="printArea" class="hidden mt-10 print-area">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-cyan-400">Cartões Gerados — Pronto para Imprimir</h2>
+            
+            <!-- Cartão Nome -->
+            <div class="card">
+                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-cyan-500 text-xl">⚙️</span>
+                        <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
+                    </div>
+                    <svg id="barcodeNome" class="barcode"></svg>
+                    <div id="textoNome" class="mt-4 text-sm font-bold tracking-widest text-zinc-800"></div>
+                </div>
+            </div>
+
+            <!-- Cartão Senha -->
+            <div class="card">
+                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-cyan-500 text-xl">⚙️</span>
+                        <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
+                    </div>
+                    <svg id="barcodeSenha" class="barcode"></svg>
+                    <div id="textoSenhaMascarada" class="mt-4 text-sm font-bold tracking-[4px] text-zinc-800"></div>
+                </div>
+            </div>
+
+            <p class="text-center text-zinc-500 mt-6 text-sm">
+                Pressione <strong>Ctrl + P</strong> → Papel A4 → Sem margens
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function gerarCredenciais() {
+            const nomeInput = document.getElementById("nome").value.trim();
+            const senhaInput = document.getElementById("senha").value.trim();
+            
+            if (!nomeInput || !senhaInput) {
+                alert("❌ Preencha o Nome e a Senha!");
+                return;
+            }
+
+            const nome = nomeInput.toUpperCase();
+            document.getElementById("textoNome").textContent = nome;
+            document.getElementById("textoSenhaMascarada").textContent = "*".repeat(Math.max(senhaInput.length, 8));
+
+            // Altura dinâmica
+            const altura = Math.max(26, 38 - (nome.length * 0.35));
+
+            JsBarcode("#barcodeNome", nome, {
+                format: "CODE128",
+                width: 1.35,
+                height: altura,
+                displayValue: false,
+                margin: 8
+            });
+
+            JsBarcode("#barcodeSenha", senhaInput, {
+                format: "CODE128",
+                width: 1.35,
+                height: Math.max(26, 38 - (senhaInput.length * 0.35)),
+                displayValue: false,
+                margin: 8
+            });
+
+            document.getElementById("printArea").classList.remove("hidden");
+            document.getElementById("printArea").scrollIntoView({ behavior: "smooth" });
+        }
+
+        function resetForm() {
+            document.getElementById("nome").value = "";
+            document.getElementById("senha").value = "";
+            document.getElementById("printArea").classList.add("hidden");
+        }
+
+        // Enter para gerar
+        document.getElementById("senha").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") gerarCredenciais();
+        });
+    </script>
+</body>
+</html>
