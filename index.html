@@ -22,11 +22,11 @@
         }
         .card-content {
             position: absolute;
-            top: 48%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            width: 88%;
+            width: 90%;
         }
         .card-title {
             font-size: 9pt;
@@ -37,19 +37,14 @@
         .barcode {
             width: 100% !important;
             max-width: 100% !important;
-            height: 26mm !important;
+            height: auto !important;
         }
-        .name-text {
+        .name-text, .senha-mascarada {
             font-size: 9.5pt;
             font-weight: bold;
             text-transform: uppercase;
             margin-top: 2mm;
-            padding: 0 3mm;
-        }
-        .senha-mascarada {
-            font-size: 10.5pt;
-            letter-spacing: 3px;
-            margin-top: 2mm;
+            padding: 0 4mm;
         }
 
         @media print {
@@ -71,57 +66,4 @@
         <button onclick="gerarCredenciais()" style="padding:12px 40px; font-size:17px; background:#1e3a8a; color:white; border:none; border-radius:6px;">Gerar Cartões para Impressão</button>
 
         <div id="printArea" style="display:none; margin-top:30px;">
-            <h2>Cartões Gerados — Pronto para Imprimir</h2>
-            
-            <!-- Cartão 1 - Nome -->
-            <div class="card">
-                <div class="card-content">
-                    <div class="card-title">🔧 Gerar Credenciais</div>
-                    <svg id="barcodeNome" class="barcode"></svg>
-                    <div class="name-text" id="textoNome"></div>
-                </div>
-            </div>
-
-            <!-- Cartão 2 - Senha -->
-            <div class="card">
-                <div class="card-content">
-                    <div class="card-title" style="margin-bottom:4mm;">🔧 Gerar Credenciais</div>
-                    <svg id="barcodeSenha" class="barcode"></svg>
-                    <div class="senha-mascarada" id="textoSenhaMascarada">********</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function gerarCredenciais() {
-            let nome = document.getElementById("nome").value.trim();
-            const senha = document.getElementById("senha").value.trim();
-            if (!nome || !senha) return alert("Preencha os dois campos!");
-
-            nome = nome.toUpperCase();
-            document.getElementById("textoNome").textContent = nome;
-            document.getElementById("textoSenhaMascarada").textContent = "*".repeat(Math.max(senha.length, 8));
-
-            // Configuração otimizada para caber no cartão
-            JsBarcode("#barcodeNome", nome, { 
-                format: "CODE128", 
-                width: 1.35, 
-                height: 26, 
-                displayValue: false, 
-                margin: 5 
-            });
-
-            JsBarcode("#barcodeSenha", senha, { 
-                format: "CODE128", 
-                width: 1.35, 
-                height: 26, 
-                displayValue: false, 
-                margin: 5 
-            });
-
-            document.getElementById("printArea").style.display = "block";
-        }
-    </script>
-</body>
-</html>
+            <
