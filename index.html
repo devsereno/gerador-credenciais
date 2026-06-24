@@ -158,5 +158,148 @@
             // Elementos do Modal
             const modalContent = document.getElementById("modalContent");
             const modalHeader = document.getElementById("modalHeader");
-            const
-    
+            const modalPrint = document.getElementById("modalPrint");
+            const cards = document.querySelectorAll(".card");
+            const cardTitles = document.querySelectorAll(".card-title");
+            const cardTexts = document.querySelectorAll(".card-text");
+
+            if (modoEscuro) {
+                // Altera para Tema Escuro
+                body.className = "bg-zinc-950 text-white min-h-screen flex items-center justify-center relative";
+                themeBtn.className = "bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-800 transition flex items-center gap-2 shadow-lg";
+                themeBtn.innerHTML = "☀️ Modo Claro";
+                formContainer.className = "space-y-6 bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-2xl transition-colors duration-300";
+                subtitle.className = "text-zinc-400 mt-2";
+                resetBtn.className = "px-8 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white rounded-2xl font-medium transition";
+                
+                inputs.forEach(i => i.className = "w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-white transition-colors duration-300");
+                labels.forEach(l => l.className = "block text-sm font-medium text-zinc-400 mb-2");
+
+                // Modal Escuro
+                modalContent.className = "relative bg-zinc-900 border border-zinc-800 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
+                modalHeader.className = "no-print p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900";
+                modalPrint.className = "p-6 overflow-y-auto flex-1 bg-zinc-900 text-center space-y-4 transition-colors duration-300";
+                cards.forEach(c => c.className = "card text-left bg-zinc-800 text-white shadow-black/50");
+                cardTitles.forEach(t => t.className = "card-title text-sm font-bold tracking-widest text-zinc-400");
+                cardTexts.forEach(x => x.className = "card-text mt-4 text-sm font-bold tracking-widest text-zinc-200");
+            } else {
+                // Altera para Tema Claro
+                body.className = "bg-zinc-100 text-zinc-900 min-h-screen flex items-center justify-center relative";
+                themeBtn.className = "bg-white border border-zinc-300 text-zinc-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-50 transition flex items-center gap-2 shadow-md";
+                themeBtn.innerHTML = "🌙 Modo Escuro";
+                formContainer.className = "space-y-6 bg-white p-8 rounded-2xl border border-zinc-200 shadow-xl transition-colors duration-300";
+                subtitle.className = "text-zinc-500 mt-2";
+                resetBtn.className = "px-8 bg-zinc-200 hover:bg-zinc-300 border border-zinc-300 text-zinc-700 rounded-2xl font-medium transition";
+
+                inputs.forEach(i => i.className = "w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-zinc-900 transition-colors duration-300");
+                labels.forEach(l => l.className = "block text-sm font-medium text-zinc-600 mb-2");
+
+                // Modal Claro
+                modalContent.className = "relative bg-white border border-zinc-200 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
+                modalHeader.className = "no-print p-6 border-b border-zinc-200 flex justify-between items-center bg-white";
+                modalPrint.className = "p-6 overflow-y-auto flex-1 bg-zinc-50 text-center space-y-4 transition-colors duration-300";
+                cards.forEach(c => c.className = "card text-left bg-white text-zinc-900 shadow-zinc-300/50");
+                cardTitles.forEach(t => t.className = "card-title text-sm font-bold tracking-widest text-zinc-500");
+                cardTexts.forEach(x => x.className = "card-text mt-4 text-sm font-bold tracking-widest text-zinc-800");
+            }
+
+            // Atualiza os códigos de barras se eles já estiverem gerados e visíveis
+            if (!document.getElementById("printArea").classList.contains("hidden")) {
+                gerarCredenciais();
+            }
+        }
+
+        function gerarCredenciais() {
+            const nomeInput = document.getElementById("nome").value.trim();
+            const senhaInput = document.getElementById("senha").value.trim();
+            
+            if (!nomeInput || !senhaInput) {
+                alert("❌ Preencha o Nome e a Senha!");
+                return;
+            }
+
+            const nome = nomeInput.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            document.getElementById("textoNome").textContent = nome;
+            document.getElementById("textoSenhaMascarada").textContent = "*".repeat(Math.max(senhaInput.length, 8));
+
+            const altura = Math.max(26, 38 - (nome.length * 0.35));
+
+            // Define a cor da linha baseado no tema para garantir contraste na tela
+            const corLinha = modoEscuro ? "#ffffff" : "#000000";
+
+            JsBarcode("#barcodeNome", nome, {
+                format: "CODE128",
+                width: 1.35,
+                height: altura,
+                displayValue: false,
+                margin: 8,
+                background: "transparent",
+                lineColor: corLinha
+            });
+
+            JsBarcode("#barcodeSenha", senhaInput, {
+                format: "CODE128",
+                width: 1.35,
+                height: Math.max(26, 38 - (senhaInput.length * 0.35)),
+                displayValue: false,
+                margin: 8,
+                background: "transparent",
+                lineColor: corLinha
+            });
+
+            document.getElementById("printArea").classList.remove("hidden");
+        }
+
+        function fecharModal() {
+            document.getElementById("printArea").classList.add("hidden");
+        }
+
+        function resetForm() {
+            document.getElementById("nome").value = "";
+            document.getElementById("senha").value = "";
+            fecharModal();
+        }
+
+        function imprimirCartoes() {
+            window.print();
+        }
+
+        function gerarPDF() {
+            const elemento = document.getElementById('modalPrint');
+            const nomeArquivo = document.getElementById("textoNome").textContent || "credencial";
+            
+            // Força temporariamente o modo claro apenas para a geração do arquivo PDF
+            const corOriginalBg = elemento.style.backgroundColor;
+            elemento.style.backgroundColor = "white";
+            
+            const cards = elemento.querySelectorAll('.card');
+            cards.forEach(c => {
+                c.style.background = "white";
+                c.style.color = "black";
+            });
+
+            const opt = {
+                margin:       10,
+                filename:     `credencial_${nomeArquivo.toLowerCase().replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(elemento).save().then(() => {
+                // Restaura o visual original após o download
+                elemento.style.backgroundColor = corOriginalBg;
+                cards.forEach(c => {
+                    c.style.background = "";
+                    c.style.color = "";
+                });
+            });
+        }
+
+        document.getElementById("senha").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") gerarCredenciais();
+        });
+    </script>
+</body>
+                        </html>
+                        
