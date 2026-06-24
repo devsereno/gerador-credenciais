@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -16,7 +15,7 @@
         
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         
-        /* O conteúdo interno do cartão é MODO CLARO FIXO */
+        /* Layout dos cartões na tela */
         .card {
             width: 85.6mm;
             height: 53.98mm;
@@ -31,64 +30,72 @@
         }
         .barcode { width: 100% !important; max-width: 100% !important; height: auto !important; }
         
-        /* REGRAS DE IMPRESSÃO OTOMIZADAS PARA PAGINAÇÃO ÚNICA */
+        /* REGRAS DE IMPRESSÃO - FORÇAR UMA PÁGINA E OCULTAR BORDAS DO MODAL */
         @media print {
-            /* Força o tamanho do papel e zera margens padrões do navegador */
             @page { 
                 size: A4 portrait;
                 margin: 0 !important; 
             }
 
-            body.modo-impressao > *:not(#printArea),
-            body.modo-impressao #modalBg,
-            body.modo-impressao #modalHeader,
-            body.modo-impressao #modalFooter,
+            /* Esconde TUDO do app, incluindo o fundo, cabeçalho e rodapé do modal */
+            body > *:not(#printArea),
+            #modalBg, 
+            #modalHeader, 
+            #modalFooter,
             .no-print {
                 display: none !important;
             }
 
             body.modo-impressao {
-                background: white !important;
-                color: black !important;
+                background: #ffffff !important;
+                color: #000000 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 height: 100vh !important;
                 overflow: hidden !important;
             }
 
+            /* Remove posicionamento fixo do modal para alinhar com a folha */
             body.modo-impressao #printArea {
                 position: static !important;
-                display: block !important;
-                background: white !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background: #ffffff !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                overflow: hidden !important;
-                height: 100% !important;
+                height: 100vh !important;
+                width: 100vw !important;
             }
 
+            /* Remove bordas, sombras e fundo escuro do modal */
             body.modo-impressao #modalContent {
                 position: static !important;
-                background: white !important;
+                background: #ffffff !important;
                 border: none !important;
                 box-shadow: none !important;
                 max-height: none !important;
-                overflow: hidden !important;
                 width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
             }
 
+            /* Espaço onde os cartões ficam isolados */
             body.modo-impressao #modalPrint {
-                background: white !important;
-                overflow: hidden !important;
-                padding: 10mm 0 0 0 !important; /* Pequeno recuo apenas no topo da página */
-                margin: 0 !important;
+                background: #ffffff !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+                display: block !important;
             }
 
-            /* Reduzido o espaço entre os cartões para não estourarem a folha A4 */
+            /* Ajuste perfeito dos cartões no papel para evitar que pulem de página */
             .card {
-                margin: 4mm auto !important; 
+                margin: 10mm auto !important; 
                 box-shadow: none !important; 
-                page-break-inside: avoid;
-                page-break-after: avoid;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
             }
         }
     </style>
@@ -234,7 +241,7 @@
                 modalContent.className = "relative bg-white border border-zinc-200 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
                 modalHeader.className = "p-6 border-b border-zinc-200 flex justify-between items-center bg-white";
                 modalFooter.className = "p-6 border-t border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row gap-3";
-                modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-200 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition";
+                modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 py-3 rounded-xl transition";
             }
         }
 
@@ -315,5 +322,5 @@
         });
     </script>
 </body>
-</html>
-                
+                                                                   </html>
+                                                                   
