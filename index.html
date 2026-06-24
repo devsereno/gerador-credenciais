@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerar Credenciais</title>
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
+    <link class="no-print" rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
@@ -15,7 +15,7 @@
         
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         
-        /* O conteúdo interno do cartão é MODO CLARO FIXO para garantir legibilidade e impressão sem erros */
+        /* O conteúdo interno do cartão é MODO CLARO FIXO para impressão perfeita */
         .card {
             width: 85.6mm;
             height: 53.98mm;
@@ -30,18 +30,52 @@
         }
         .barcode { width: 100% !important; max-width: 100% !important; height: auto !important; }
         
-        /* REGRAS DE IMPRESSÃO */
+        /* REGRAS DE IMPRESSÃO PROFISSIONAIS (CSS PURO) */
         @media print {
-            body, html { background: white !important; color: black !important; }
-            body > *:not(#modalPrint), #modalBg, .no-print { display: none !important; }
-            #modalPrint { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: white !important; }
+            /* 1. Oculta absolutamente tudo que não deve ser impresso */
+            body > *:not(#printArea), 
+            #modalBg, 
+            #modalHeader, 
+            #modalFooter,
+            .no-print { 
+                display: none !important; 
+            }
             
-            .card { 
-                margin: 10mm auto; 
-                box-shadow: none !important; 
+            /* 2. Força o fundo da página a ser branco no papel/PDF */
+            body, html { 
                 background: white !important; 
-                color: black !important;
-                border: 2px solid #0ea5e9 !important; 
+                color: black !important; 
+            }
+            
+            /* 3. Desativa o comportamento de 'janela flutuante' do modal para ele fluir na folha */
+            #printArea { 
+                position: absolute !important; 
+                inset: 0 !important; 
+                display: block !important; 
+                padding: 0 !important;
+                background: white !important;
+            }
+            
+            #modalContent { 
+                border: none !important; 
+                box-shadow: none !important; 
+                background: white !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            
+            #modalPrint { 
+                background: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+            
+            /* 4. Ajusta as margens dos cartões na folha A4 */
+            .card { 
+                margin: 10mm auto !important; 
+                box-shadow: none !important; 
                 page-break-inside: avoid; 
             }
         }
@@ -49,13 +83,13 @@
 </head>
 <body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center relative">
 
-    <div class="absolute top-4 right-4 no-print">
-        <button onclick="toggleTema()" id="themeBtn" class="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-800 transition flex items-center gap-2 shadow-lg">
-            ☀️ Modo Claro
-        </button>
-    </div>
+    <div id="appContainer" class="w-full max-w-lg p-6">
+        <div class="absolute top-4 right-4 no-print">
+            <button onclick="toggleTema()" id="themeBtn" class="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-800 transition flex items-center gap-2 shadow-lg">
+                ☀️ Modo Claro
+            </button>
+        </div>
 
-    <div class="max-w-lg w-full p-6">
         <div class="text-center mb-8">
             <h1 id="mainTitle" class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 🔧 Gerar Credenciais
@@ -97,7 +131,7 @@
         
         <div id="modalContent" class="relative bg-zinc-900 border border-zinc-800 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300">
             
-            <div id="modalHeader" class="no-print p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+            <div id="modalHeader" class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
                 <h2 class="text-xl font-semibold text-cyan-400">Cartões Gerados</h2>
                 <button onclick="fecharModal()" class="text-zinc-400 hover:text-white text-2xl font-bold">&times;</button>
             </div>
@@ -127,7 +161,7 @@
                 </div>
             </div>
 
-            <div id="modalFooter" class="no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3">
+            <div id="modalFooter" class="p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3">
                 <button onclick="imprimirCartoes()" class="flex-1 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 font-semibold py-3 rounded-xl transition flex justify-center items-center gap-2">
                     🖨️ Imprimir
                 </button>
@@ -154,7 +188,6 @@
             const resetBtn = document.getElementById("resetBtn");
             const subtitle = document.getElementById("mainSubtitle");
             
-            // Elementos do Modal que mudam (Cabeçalho e Rodapé apenas, os cartões ficam brancos)
             const modalContent = document.getElementById("modalContent");
             const modalHeader = document.getElementById("modalHeader");
             const modalFooter = document.getElementById("modalFooter");
@@ -171,10 +204,9 @@
                 inputs.forEach(i => i.className = "w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-white transition-colors duration-300");
                 labels.forEach(l => l.className = "block text-sm font-medium text-zinc-400 mb-2");
 
-                // Moldura do Modal em Modo Escuro
                 modalContent.className = "relative bg-zinc-900 border border-zinc-800 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
-                modalHeader.className = "no-print p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900";
-                modalFooter.className = "no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3";
+                modalHeader.className = "p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900";
+                modalFooter.className = "p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3";
                 modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition";
             } else {
                 body.className = "bg-zinc-100 text-zinc-900 min-h-screen flex items-center justify-center relative";
@@ -187,10 +219,9 @@
                 inputs.forEach(i => i.className = "w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-zinc-900 transition-colors duration-300");
                 labels.forEach(l => l.className = "block text-sm font-medium text-zinc-600 mb-2");
 
-                // Moldura do Modal em Modo Claro
                 modalContent.className = "relative bg-white border border-zinc-200 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
-                modalHeader.className = "no-print p-6 border-b border-zinc-200 flex justify-between items-center bg-white";
-                modalFooter.className = "no-print p-6 border-t border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row gap-3";
+                modalHeader.className = "p-6 border-b border-zinc-200 flex justify-between items-center bg-white";
+                modalFooter.className = "p-6 border-t border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row gap-3";
                 modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 py-3 rounded-xl transition";
             }
         }
@@ -210,9 +241,6 @@
 
             const altura = Math.max(26, 38 - (nome.length * 0.35));
 
-            // Fixado permanentemente em Preto (#000000) para funcionar sempre na folha/PDF branca
-            const corLinha = "#000000"; 
-
             JsBarcode("#barcodeNome", nome, {
                 format: "CODE128",
                 width: 1.35,
@@ -220,7 +248,7 @@
                 displayValue: false,
                 margin: 8,
                 background: "transparent",
-                lineColor: corLinha
+                lineColor: "#000000"
             });
 
             JsBarcode("#barcodeSenha", senhaInput, {
@@ -230,7 +258,7 @@
                 displayValue: false,
                 margin: 8,
                 background: "transparent",
-                lineColor: corLinha
+                lineColor: "#000000"
             });
 
             document.getElementById("printArea").classList.remove("hidden");
@@ -246,6 +274,7 @@
             fecharModal();
         }
 
+        // Agora a função executa perfeitamente sem quebras ou telas em branco no celular
         function imprimirCartoes() {
             window.print();
         }
@@ -258,7 +287,7 @@
                 margin:       10,
                 filename:     `credencial_${nomeArquivo.toLowerCase().replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 3, useCORS: true }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
@@ -270,4 +299,5 @@
         });
     </script>
 </body>
-</html>
+    </html>
+    
