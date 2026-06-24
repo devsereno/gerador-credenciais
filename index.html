@@ -15,20 +15,22 @@
         
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         
-        /* Base dos Cartões (Dinâmicos via Tailwind ou classes específicas) */
+        /* O conteúdo interno do cartão é MODO CLARO FIXO para garantir legibilidade e impressão sem erros */
         .card {
             width: 85.6mm;
             height: 53.98mm;
             margin: 15px auto;
             border: 2px solid #0ea5e9;
+            background: #ffffff !important;
+            color: #000000 !important;
             position: relative;
             overflow: hidden;
             border-radius: 12px;
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.3);
         }
         .barcode { width: 100% !important; max-width: 100% !important; height: auto !important; }
         
-        /* REGRAS DE IMPRESSÃO (Sempre modo claro para poupar tinta) */
+        /* REGRAS DE IMPRESSÃO */
         @media print {
             body, html { background: white !important; color: black !important; }
             body > *:not(#modalPrint), #modalBg, .no-print { display: none !important; }
@@ -42,9 +44,6 @@
                 border: 2px solid #0ea5e9 !important; 
                 page-break-inside: avoid; 
             }
-            .card-title { color: #4b5563 !important; }
-            .card-text { color: #1f2937 !important; }
-            .barcode { filter: none !important; }
         }
     </style>
 </head>
@@ -103,39 +102,39 @@
                 <button onclick="fecharModal()" class="text-zinc-400 hover:text-white text-2xl font-bold">&times;</button>
             </div>
 
-            <div id="modalPrint" class="p-6 overflow-y-auto flex-1 bg-zinc-900 text-center space-y-4 transition-colors duration-300">
+            <div id="modalPrint" class="p-6 overflow-y-auto flex-1 bg-white text-center space-y-4">
                 
-                <div id="cardNomeContainer" class="card text-left bg-zinc-800 text-white shadow-black/50">
+                <div class="card text-left">
                     <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="text-cyan-500 text-xl">⚙️</span>
-                            <span class="card-title text-sm font-bold tracking-widest text-zinc-400">GERAR CREDENCIAIS</span>
+                            <span class="text-sm font-bold tracking-widest text-zinc-500">GERAR CREDENCIAIS</span>
                         </div>
                         <svg id="barcodeNome" class="barcode"></svg>
-                        <div id="textoNome" class="card-text mt-4 text-sm font-bold tracking-widest text-zinc-200"></div>
+                        <div id="textoNome" class="mt-4 text-sm font-bold tracking-widest text-zinc-800"></div>
                     </div>
                 </div>
 
-                <div id="cardSenhaContainer" class="card text-left bg-zinc-800 text-white shadow-black/50">
+                <div class="card text-left">
                     <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="text-cyan-500 text-xl">⚙️</span>
-                            <span class="card-title text-sm font-bold tracking-widest text-zinc-400">GERAR CREDENCIAIS</span>
+                            <span class="text-sm font-bold tracking-widest text-zinc-500">GERAR CREDENCIAIS</span>
                         </div>
                         <svg id="barcodeSenha" class="barcode"></svg>
-                        <div id="textoSenhaMascarada" class="card-text mt-4 text-sm font-bold tracking-[4px] text-zinc-200"></div>
+                        <div id="textoSenhaMascarada" class="mt-4 text-sm font-bold tracking-[4px] text-zinc-800"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3">
+            <div id="modalFooter" class="no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3">
                 <button onclick="imprimirCartoes()" class="flex-1 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 font-semibold py-3 rounded-xl transition flex justify-center items-center gap-2">
                     🖨️ Imprimir
                 </button>
                 <button onclick="gerarPDF()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition flex justify-center items-center gap-2">
                     📄 Salvar PDF
                 </button>
-                <button onclick="fecharModal()" class="sm:w-auto px-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition">
+                <button onclick="fecharModal()" id="modalCloseBtn" class="sm:w-auto px-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition">
                     Fechar
                 </button>
             </div>
@@ -155,16 +154,13 @@
             const resetBtn = document.getElementById("resetBtn");
             const subtitle = document.getElementById("mainSubtitle");
             
-            // Elementos do Modal
+            // Elementos do Modal que mudam (Cabeçalho e Rodapé apenas, os cartões ficam brancos)
             const modalContent = document.getElementById("modalContent");
             const modalHeader = document.getElementById("modalHeader");
-            const modalPrint = document.getElementById("modalPrint");
-            const cards = document.querySelectorAll(".card");
-            const cardTitles = document.querySelectorAll(".card-title");
-            const cardTexts = document.querySelectorAll(".card-text");
+            const modalFooter = document.getElementById("modalFooter");
+            const modalCloseBtn = document.getElementById("modalCloseBtn");
 
             if (modoEscuro) {
-                // Altera para Tema Escuro
                 body.className = "bg-zinc-950 text-white min-h-screen flex items-center justify-center relative";
                 themeBtn.className = "bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-800 transition flex items-center gap-2 shadow-lg";
                 themeBtn.innerHTML = "☀️ Modo Claro";
@@ -175,15 +171,12 @@
                 inputs.forEach(i => i.className = "w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-white transition-colors duration-300");
                 labels.forEach(l => l.className = "block text-sm font-medium text-zinc-400 mb-2");
 
-                // Modal Escuro
+                // Moldura do Modal em Modo Escuro
                 modalContent.className = "relative bg-zinc-900 border border-zinc-800 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
                 modalHeader.className = "no-print p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900";
-                modalPrint.className = "p-6 overflow-y-auto flex-1 bg-zinc-900 text-center space-y-4 transition-colors duration-300";
-                cards.forEach(c => c.className = "card text-left bg-zinc-800 text-white shadow-black/50");
-                cardTitles.forEach(t => t.className = "card-title text-sm font-bold tracking-widest text-zinc-400");
-                cardTexts.forEach(x => x.className = "card-text mt-4 text-sm font-bold tracking-widest text-zinc-200");
+                modalFooter.className = "no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3";
+                modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition";
             } else {
-                // Altera para Tema Claro
                 body.className = "bg-zinc-100 text-zinc-900 min-h-screen flex items-center justify-center relative";
                 themeBtn.className = "bg-white border border-zinc-300 text-zinc-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-50 transition flex items-center gap-2 shadow-md";
                 themeBtn.innerHTML = "🌙 Modo Escuro";
@@ -194,18 +187,11 @@
                 inputs.forEach(i => i.className = "w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-zinc-900 transition-colors duration-300");
                 labels.forEach(l => l.className = "block text-sm font-medium text-zinc-600 mb-2");
 
-                // Modal Claro
+                // Moldura do Modal em Modo Claro
                 modalContent.className = "relative bg-white border border-zinc-200 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden transition-colors duration-300";
                 modalHeader.className = "no-print p-6 border-b border-zinc-200 flex justify-between items-center bg-white";
-                modalPrint.className = "p-6 overflow-y-auto flex-1 bg-zinc-50 text-center space-y-4 transition-colors duration-300";
-                cards.forEach(c => c.className = "card text-left bg-white text-zinc-900 shadow-zinc-300/50");
-                cardTitles.forEach(t => t.className = "card-title text-sm font-bold tracking-widest text-zinc-500");
-                cardTexts.forEach(x => x.className = "card-text mt-4 text-sm font-bold tracking-widest text-zinc-800");
-            }
-
-            // Atualiza os códigos de barras se eles já estiverem gerados e visíveis
-            if (!document.getElementById("printArea").classList.contains("hidden")) {
-                gerarCredenciais();
+                modalFooter.className = "no-print p-6 border-t border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row gap-3";
+                modalCloseBtn.className = "sm:w-auto px-6 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 py-3 rounded-xl transition";
             }
         }
 
@@ -224,8 +210,8 @@
 
             const altura = Math.max(26, 38 - (nome.length * 0.35));
 
-            // Define a cor da linha baseado no tema para garantir contraste na tela
-            const corLinha = modoEscuro ? "#ffffff" : "#000000";
+            // Fixado permanentemente em Preto (#000000) para funcionar sempre na folha/PDF branca
+            const corLinha = "#000000"; 
 
             JsBarcode("#barcodeNome", nome, {
                 format: "CODE128",
@@ -267,16 +253,6 @@
         function gerarPDF() {
             const elemento = document.getElementById('modalPrint');
             const nomeArquivo = document.getElementById("textoNome").textContent || "credencial";
-            
-            // Força temporariamente o modo claro apenas para a geração do arquivo PDF
-            const corOriginalBg = elemento.style.backgroundColor;
-            elemento.style.backgroundColor = "white";
-            
-            const cards = elemento.querySelectorAll('.card');
-            cards.forEach(c => {
-                c.style.background = "white";
-                c.style.color = "black";
-            });
 
             const opt = {
                 margin:       10,
@@ -286,14 +262,7 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(elemento).save().then(() => {
-                // Restaura o visual original após o download
-                elemento.style.backgroundColor = corOriginalBg;
-                cards.forEach(c => {
-                    c.style.background = "";
-                    c.style.color = "";
-                });
-            });
+            html2pdf().set(opt).from(elemento).save();
         }
 
         document.getElementById("senha").addEventListener("keypress", (e) => {
@@ -301,5 +270,4 @@
         });
     </script>
 </body>
-                        </html>
-                        
+</html>
