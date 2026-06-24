@@ -6,9 +6,9 @@
     <title>Gerar Credenciais</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5968/5968890.png">
     
-    <!-- Tailwind CSS (leve e moderno) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -27,17 +27,18 @@
         }
         .barcode { width: 100% !important; max-width: 100% !important; height: auto !important; }
         
+        /* Regras rígidas de impressão */
         @media print {
-            body * { visibility: hidden; }
-            .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; left: 0; top: 0; width: 100%; }
-            .card { margin: 8mm auto; box-shadow: none; border: 2px solid #0ea5e9; }
-            button, .no-print { display: none !important; }
+            body, html { background: white !important; color: black !important; }
+            /* Esconde tudo, exceto o container dos cartões */
+            body > *:not(#modalPrint), #modalBg, .no-print { display: none !important; }
+            #modalPrint { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: white; }
+            .card { margin: 10mm auto; box-shadow: none; border: 2px solid #0ea5e9; page-break-inside: avoid; }
         }
     </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
-    <div class="max-w-lg mx-auto p-6">
+<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full p-6">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 🔧 Gerar Credenciais
@@ -45,7 +46,7 @@
             <p class="text-zinc-400 mt-2">Code 128 • Cartões de Crédito</p>
         </div>
 
-        <div class="space-y-6 bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+        <div class="space-y-6 bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-2xl">
             <div>
                 <label class="block text-sm font-medium text-zinc-400 mb-2">Nome / Usuário</label>
                 <input type="text" id="nome" 
@@ -62,7 +63,7 @@
 
             <div class="flex gap-4">
                 <button onclick="gerarCredenciais()" 
-                        class="flex-1 bg-cyan-500 hover:bg-cyan-600 transition py-4 rounded-2xl font-semibold text-lg">
+                        class="flex-1 bg-cyan-500 hover:bg-cyan-600 transition py-4 rounded-2xl font-semibold text-lg text-zinc-950 shadow-lg shadow-cyan-500/20">
                     Gerar Cartões
                 </button>
                 
@@ -72,38 +73,54 @@
                 </button>
             </div>
         </div>
+    </div>
 
-        <!-- Área de Impressão -->
-        <div id="printArea" class="hidden mt-10 print-area">
-            <h2 class="text-2xl font-semibold text-center mb-6 text-cyan-400">Cartões Gerados — Pronto para Imprimir</h2>
+    <div id="printArea" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="modalBg" class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="fecharModal()"></div>
+        
+        <div class="relative bg-zinc-900 border border-zinc-800 w-full max-w-xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col z-10 overflow-hidden">
             
-            <!-- Cartão Nome -->
-            <div class="card">
-                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="text-cyan-500 text-xl">⚙️</span>
-                        <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
+            <div class="no-print p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+                <h2 class="text-xl font-semibold text-cyan-400">Cartões Gerados</h2>
+                <button onclick="fecharModal()" class="text-zinc-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+
+            <div id="modalPrint" class="p-6 overflow-y-auto flex-1 bg-zinc-900 text-center">
+                
+                <div class="card text-left">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-cyan-500 text-xl">⚙️</span>
+                            <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
+                        </div>
+                        <svg id="barcodeNome" class="barcode"></svg>
+                        <div id="textoNome" class="mt-4 text-sm font-bold tracking-widest text-zinc-800"></div>
                     </div>
-                    <svg id="barcodeNome" class="barcode"></svg>
-                    <div id="textoNome" class="mt-4 text-sm font-bold tracking-widest text-zinc-800"></div>
+                </div>
+
+                <div class="card text-left">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-cyan-500 text-xl">⚙️</span>
+                            <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
+                        </div>
+                        <svg id="barcodeSenha" class="barcode"></svg>
+                        <div id="textoSenhaMascarada" class="mt-4 text-sm font-bold tracking-[4px] text-zinc-800"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Cartão Senha -->
-            <div class="card">
-                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="text-cyan-500 text-xl">⚙️</span>
-                        <span class="text-sm font-bold tracking-widest text-zinc-600">GERAR CREDENCIAIS</span>
-                    </div>
-                    <svg id="barcodeSenha" class="barcode"></svg>
-                    <div id="textoSenhaMascarada" class="mt-4 text-sm font-bold tracking-[4px] text-zinc-800"></div>
-                </div>
+            <div class="no-print p-6 border-t border-zinc-800 bg-zinc-900/50 flex flex-col sm:flex-row gap-3">
+                <button onclick="imprimirCartoes()" class="flex-1 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 font-semibold py-3 rounded-xl transition flex justify-center items-center gap-2">
+                    🖨️ Imprimir
+                </button>
+                <button onclick="gerarPDF()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition flex justify-center items-center gap-2">
+                    📄 Salvar PDF
+                </button>
+                <button onclick="fecharModal()" class="sm:w-auto px-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-3 rounded-xl transition">
+                    Fechar
+                </button>
             </div>
-
-            <p class="text-center text-zinc-500 mt-6 text-sm">
-                Pressione <strong>Ctrl + P</strong> → Papel A4 → Sem margens
-            </p>
         </div>
     </div>
 
@@ -117,11 +134,11 @@
                 return;
             }
 
-            const nome = nomeInput.toUpperCase();
+            // Remove acentos para evitar quebra no código de barras
+            const nome = nomeInput.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             document.getElementById("textoNome").textContent = nome;
             document.getElementById("textoSenhaMascarada").textContent = "*".repeat(Math.max(senhaInput.length, 8));
 
-            // Altura dinâmica
             const altura = Math.max(26, 38 - (nome.length * 0.35));
 
             JsBarcode("#barcodeNome", nome, {
@@ -140,14 +157,39 @@
                 margin: 8
             });
 
+            // Abre o modal
             document.getElementById("printArea").classList.remove("hidden");
-            document.getElementById("printArea").scrollIntoView({ behavior: "smooth" });
+        }
+
+        function fecharModal() {
+            document.getElementById("printArea").classList.add("hidden");
         }
 
         function resetForm() {
             document.getElementById("nome").value = "";
             document.getElementById("senha").value = "";
-            document.getElementById("printArea").classList.add("hidden");
+            fecharModal();
+        }
+
+        function imprimirCartoes() {
+            window.print();
+        }
+
+        function gerarPDF() {
+            const elemento = document.getElementById('modalPrint');
+            const nomeArquivo = document.getElementById("textoNome").textContent || "credencial";
+            
+            // Configurações do PDF para manter o tamanho real
+            const opt = {
+                margin:       10,
+                filename:     `credencial_${nomeArquivo.toLowerCase().replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Executa a conversão do HTML para PDF
+            html2pdf().set(opt).from(elemento).save();
         }
 
         // Enter para gerar
