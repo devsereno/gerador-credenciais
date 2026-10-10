@@ -47,6 +47,40 @@
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
+
+    <!-- Splash DevSereno com carregador -->
+    <div id="splash" style="
+      position:fixed; inset:0; background:#0b1020; color:#e0e7ff;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      z-index:99999; font-family:system-ui,sans-serif; transition:opacity .4s;
+    ">
+      <div style="font-size:30px; font-weight:800; margin-bottom:6px;">DevSereno</div>
+      <div style="font-size:13px; opacity:.7; letter-spacing:2px; margin-bottom:28px;">DESENVOLVEDOR</div>
+
+      <!-- Barra de carregamento -->
+      <div style="width:180px; height:4px; background:#1e293b; border-radius:4px; overflow:hidden;">
+        <div id="bar" style="width:0%; height:100%; background:#818cf8; border-radius:4px; transition:width 1.4s ease-out;"></div>
+      </div>
+      <div style="margin-top:10px; font-size:12px; opacity:.6;">Carregando...</div>
+    </div>
+
+    <script>
+      // Inicia a barra
+      setTimeout(() => {
+        const bar = document.getElementById('bar');
+        if (bar) bar.style.width = '100%';
+      }, 50);
+
+      // Remove o splash após 1.5s
+      setTimeout(() => {
+        const s = document.getElementById('splash');
+        if (s) {
+          s.style.opacity = '0';
+          setTimeout(() => s.remove(), 400);
+        }
+      }, 1500);
+    </script>
+
     <div class="max-w-lg mx-auto p-6">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
@@ -130,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- Cartões QR Code (aparecem só se marcado) -->
+            <!-- Cartões QR Code -->
             <div id="qrCards"></div>
 
             <p class="text-center text-zinc-500 mt-6 text-sm no-print">
@@ -182,7 +216,7 @@
                 card.innerHTML = `
                     <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
                         <div class="text-sm font-bold tracking-widest text-zinc-600 mb-2">${titulo}</div>
-                        <div id="qr-${Date.now()}" class="qrcode"></div>
+                        <div class="qrcode"></div>
                         <div class="mt-2 text-xs text-zinc-500 text-center px-2">\( {texto.substring(0, 40)} \){texto.length > 40 ? "..." : ""}</div>
                     </div>
                 `;
@@ -227,4 +261,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
